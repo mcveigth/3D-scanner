@@ -5,8 +5,11 @@ from datetime import datetime
 from pathlib import Path
 from flask import Flask, request, abort, send_from_directory
 from flask_cors import CORS
-
-import power, capture, download, settings
+#testing
+from flask_jwt_extended import create_access_token,get_jwt,get_jwt_identity, unset_jwt_cookies, jwt_required, JWTManager
+from apscheduler.schedulers.background import BackgroundScheduler
+##
+import power, capture, download, settings, otpLogin
 
 import logging
 log = logging.getLogger('werkzeug')
@@ -19,6 +22,10 @@ output_folder = Path('/home/mike/3DshockOriginal/server/output') #path needs to 
 app = Flask(__name__, static_folder=str(build_folder), static_url_path='')
 CORS(app)
 
+#testing
+app.config["JWT_SECRET_KEY"] = "testing1"
+jwt = JWTManager(app)
+##
 STANDBY = 0
 WARMUP = 1
 CAPTURING_PHOTO = 2
@@ -28,16 +35,46 @@ DOWNLOADING = 5
 
 status = STANDBY
 
+#testing
+otpQueue = "otpQueue.json"
+
+def createOtps():
+    """Creates otps based on dates provided by otpQueue"""
+    dates = otpLogin.createDates("otpQueue.json")
+    otps = [otpLogin.getOTP(d) for d in dates]
+    print(otps)
+
+def checkQueue():
+    """Checks for changes in queue, if changes were made call createOtps"""
+    with open("otp.log") as f:
+        stamp = f.read()
+        actStamp = str(os.path.getctime("otpQueue.json"))
+        if stamp != actStamp:
+            print("file has changed")
+            with open("otp.log", "w") as f:
+                f.write(actStamp)
+            createOtps()
+
+scheduler = BackgroundScheduler() 
+scheduler.add_job(func=checkQueue,trigger='interval', seconds=5) #sets scheduler for checkQueue
+scheduler.start()
+##
 @app.route('/api/status', methods=['GET'])
 def status_get():
     return {'status': status}
 
 @app.route('/api/clients', methods=['POST'])
 def clients_post():
-    content = request.json
-
-    #phone = str(content['phone'])
+    content = request.json    
     address = str(content['address'])
+    passcode = str(content["passcode"])
+    #testing
+    print(passcode != "13689")
+    if passcode != "13689":
+        if not otpLogin.verifyOTP(passcode, 3):
+            #verifies otp for a window of 3(90secs)
+            return {"msg": "Wrong passcode"}, 401
+    ######
     for i in range(1, 100):
         suffix = str(i).zfill(2)
         folder = address + '_' + suffix

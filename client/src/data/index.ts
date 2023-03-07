@@ -7,6 +7,7 @@ export const clients: Client[] = [
     phone: 4039876543,
     has_photos: false,
     address: '20 ave',
+    passcode: '123456'
   },
   {
     name: 'Tanner',
@@ -14,6 +15,7 @@ export const clients: Client[] = [
     phone: 4031234567,
     has_photos: true,
     address: '20 ave',
+    passcode: '123456'
   },
 ]
 export const client: Client = clients[0]

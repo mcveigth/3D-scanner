@@ -26,6 +26,7 @@ export const getClient = async (id: string): Promise<Client> => {
       email: 'test@test.test',
       phone: 1234567890,
       address: '20 test',
+      passcode: '123456',
     }
   const res = await axios.get<Client>(`/api/clients/${id}`)
   return res.data

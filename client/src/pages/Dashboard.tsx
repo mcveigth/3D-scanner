@@ -11,6 +11,7 @@ type FormData = {
   email: string
   phone: string
   address: string //added address
+  passcode: string
 }
 
 export const Dashboard = () => {
@@ -30,16 +31,25 @@ export const Dashboard = () => {
       return
     }
 
+    try{
     const client_id = await createClient({
       name: values.name,
       email: values.email,
       phone: parseInt(values.phone.replace(/\D/g, '')),
-      address: values.address, //error for some reason omit client something
+      address: values.address,
+      passcode: values.passcode,
     })
 
     history.push(`/sessions/${client_id}`)
+  } catch (error: any) {
+    if(error.response && error.response.status === 401) {
+      setError('the passcode you have provided has expired or is incorrect, to get a new passcode please contact @(stuff)')
+    } else {
+      setError(error.message);
+    }
   }
-
+  }
+  
   return (
     <Content>
       <Typography.Title className="page-head" level={3}>
@@ -54,18 +64,23 @@ export const Dashboard = () => {
         wrapperCol={{ span: 16 }}
       >
         <Typography.Paragraph style={{ textAlign: 'center' }}>
-          Enter the name, email and phone number of the subject
+        Please enter your information and the passcode that was sent to your email.<br></br> <i>If you did not received a passcode please contact us @(contact info)</i>.
         </Typography.Paragraph>
-        <FormItem label="name" name="name">
-          <Input minLength={3} />
-        </FormItem>
-        <FormItem label="email" name="email">
+        <FormItem label="Email" name="email">
           <Input type="email" />
         </FormItem>
-        <FormItem label="phone" name="phone">
+
+        <FormItem label="Passcode" name="passcode" rules={[{required: true, message: 'Please input your passcode'}]}>
+          <Input maxLength={6}/>
+        </FormItem>
+        <FormItem label="Name" name="name">
+          <Input minLength={3} />
+        </FormItem>
+        
+        <FormItem label="Phone" name="phone">
           <Input type="tel" minLength={10} />
         </FormItem>
-        <FormItem label="address" name="address">
+        <FormItem label="Address" name="address">
           <Input type="address" />
         </FormItem>
         <Row justify="space-between">

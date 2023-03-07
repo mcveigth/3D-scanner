@@ -4,6 +4,7 @@ export type Client = {
   phone: number
   has_photos: boolean
   address: string
+  passcode: string
 }
 
 export type Session = {

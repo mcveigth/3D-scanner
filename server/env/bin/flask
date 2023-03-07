@@ -1,4 +1,4 @@
-#!/home/mcveigth/3D-scanner/server/env/bin/python3
+#!/home/mike/3DshockOriginal/server/env/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys

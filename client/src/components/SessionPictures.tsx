@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Card, Modal, Row, Select, Typography } from 'antd'
+import { Card, Modal, Row, Col, Select, Typography } from 'antd'
 import { getSession } from '../api'
 import { ScrollToTop } from './ScrollToTop'
 
@@ -52,6 +52,17 @@ export const SessionPictures = ({ clientId }: Props) => {
     const num = name.split('_')[0]
     return focusPhotos.includes(num)
   })
+
+  const gridStyle: React.CSSProperties = {
+    width: '100/3%',
+    height: 'auto',
+    
+  };
+
+  const imageStyle: React.CSSProperties = {
+    width: '100%',
+    height: 'auto',
+  }
 
   return (
     <>
@@ -107,20 +118,26 @@ export const SessionPictures = ({ clientId }: Props) => {
       </div>
       <div className="featured-photos" style={{ marginTop: '2rem' }}>
         {filteredPhotos.map((src) => (
-          <img
-            onClick={() => setActiveUrl(src)}
-            src={`${host}/output/${clientId}/${src}`}
-            alt="lol"
-          />
+          //display featured photos
+            <Card.Grid hoverable={false} style={gridStyle}>
+            <img
+              style={imageStyle}
+              onClick={() => setActiveUrl(src)}
+              src={`${host}/output/${clientId}/${src}`}
+              alt="photo"
+            />
+            </Card.Grid>
         ))}
       </div>
       <div className="photo-wall">
+        
         {photos.map((src) => (
+          //display all photos
           <Card key={src} className="photo" title={src.split('_')[0]}>
             <img
               onClick={() => setActiveUrl(src)}
               src={`${host}/output/${clientId}/${src}`}
-              alt="lol"
+              alt="photo"
             />
           </Card>
         ))}
