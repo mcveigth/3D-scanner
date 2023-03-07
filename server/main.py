@@ -18,8 +18,9 @@ if not settings.DEBUG:
 
 build_folder = Path('../client/build')
 #output_folder = Path('./output')
-output_folder = Path('~/3D-scanner/server/output') #path needs to be changed each time if folder is different
+output_folder = Path('/home/mike/3DshockOriginal/server/output') #path needs to be changed each time if folder is different
 app = Flask(__name__, static_folder=str(build_folder), static_url_path='')
+
 CORS(app)
 
 #testing
@@ -66,34 +67,33 @@ def status_get():
 @app.route('/api/clients', methods=['POST'])
 def clients_post():
     content = request.json    
-    address = str(content['address'])
-    passcode = str(content["passcode"])
+    email = str(content['email'])
+    passcode = str(content['passcode'])
     #testing
-    print(passcode != "13689")
-    if passcode != "13689":
-        if not otpLogin.verifyOTP(passcode, 3):
-            #verifies otp for a window of 3(90secs)
-            return {"msg": "Wrong passcode"}, 401
-    ######
-    for i in range(1, 100):
-        suffix = str(i).zfill(2)
-        folder = address + '_' + suffix
-        path = output_folder / folder
-        if not path.exists():
-            break
+    if otpLogin.verifyOTP(passcode, 3) or passcode == '123456':
+        #verifies otp for a window of 3(90secs)
+        for i in range(1, 100):
+            suffix = str(i).zfill(2)
+            folder = email + '_' + suffix
+            path = output_folder / folder
+            if not path.exists():
+                break
 
-    content['date'] = datetime.now().strftime('%Y-%m-%d')
-    content['time'] = datetime.now().strftime('%H:%M:%S')
+        content['date'] = datetime.now().strftime('%Y-%m-%d')
+        content['time'] = datetime.now().strftime('%H:%M:%S')
 
-    path.mkdir()
-    info_file = path / 'info.json'
-    info_file.touch()
-    info_file.write_text(json.dumps(content, indent=4))
+        path.mkdir() #fucking tanner where did you get your degree from. A cerealbox?
+        print(path)
+        info_file = path / 'info.json'
+        info_file.touch()
+        info_file.write_text(json.dumps(content, indent=4))
 
-    client_id = folder
+        client_id = folder
 
-    print('POST client:', content, 'cid:', client_id)
-    return {'client_id': client_id}
+        print('POST client:', content, 'cid:', client_id)
+        return {'client_id': client_id}
+    else:
+        return {"msg": "Wrong passcode"}, 401
 
 @app.route('/api/clients/<cid>', methods=['GET'])
 def clients_get(cid):
@@ -162,9 +162,9 @@ def session_post(cid):
         # warmup
         status = WARMUP
         power.lights_on()
-        time.sleep(2)
-        power.lights_off()
-        time.sleep(1)
+        #time.sleep(2)
+        #power.lights_off()
+        #time.sleep(1)
     except BaseException as e:
         print('Problem with lights: {} - {}'.format(e.__class__.__name__, str(e)))
         print()
@@ -177,8 +177,8 @@ def session_post(cid):
     power.lights_on()
     time.sleep(0.1)
     capture.trigger_capture()
-    time.sleep(light_time / 1000)
-    power.lights_off()
+    #time.sleep(light_time / 1000)
+    #power.lights_off()
 
     status = WRITING
     time.sleep(max(5 - light_time / 1000, 1))
@@ -203,4 +203,4 @@ def not_found(e):
 def output(filename):
     return send_from_directory('output/', filename)
 
-app.run(host='0.0.0.0', port=80) #changed port to 80 for changes and testing
+app.run(host='0.0.0.0', port=5001, debug=True) #changed port to 80 for changes and testing
