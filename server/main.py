@@ -15,7 +15,7 @@ if not settings.DEBUG:
 
 build_folder = Path('../client/build')
 #output_folder = Path('./output')
-output_folder = Path('/home/mike/3DshockOriginal/server/output') #path needs to be changed each time if folder is different
+output_folder = Path('~/3D-scanner/server/output') #path needs to be changed each time if folder is different
 app = Flask(__name__, static_folder=str(build_folder), static_url_path='')
 CORS(app)
 
@@ -147,7 +147,9 @@ def session_post(cid):
     time.sleep(max(5 - light_time / 1000, 1))
 
     status = DOWNLOADING
-    download.download_all_photos(path)
+    #download.download_all_photos(path)
+    #testing asyncio alternative to download_all_photos()
+    await download.download_all_photos_asyncio(path)
     time.sleep(3)
 
     status = STANDBY

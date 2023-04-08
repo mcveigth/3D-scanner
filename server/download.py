@@ -3,7 +3,10 @@ import settings
 import threading
 import paramiko
 import time
+import asyncio
+
 paramiko.util.log_to_file('paramiko.log')
+
 
 def fake_download(ip, dest):
     import requests, random
@@ -12,6 +15,7 @@ def fake_download(ip, dest):
     time.sleep(random.uniform(2, 10))
     with open(dest / (num + '_420.jpg'), 'wb') as f:
         f.write(r.content)
+
 
 def download(ip, dest):
     if settings.DEBUG:
@@ -41,6 +45,7 @@ def download(ip, dest):
 
     print('Finished downloading from', ip)
 
+
 def download_all_photos(dest):
     if not dest.exists():
         raise Exception('Destination does not exist')
@@ -51,6 +56,25 @@ def download_all_photos(dest):
         t = threading.Thread(target=download, args=(ip, dest))
         t.start()
 
+async def download_all_photos_asyncio(dest):
+    """uses asyncio to download pictures from RASPBERRY_IPS, supposedly should fix some problems"""
+    if not dest.exists():
+        raise Exception('Destination does not exist')
+
+    print('Downloading all photos to', dest)
+
+    tasks = []
+    for ip in settings.RASPBERRY_IPS:
+        tasks.append(asyncio.create_task(download(ip, dest)))
+
+    await asyncio.gather(*tasks, return_exceptions=True)
+
+    print("Finished downloading all photos")
+
+
 if __name__ == '__main__':
     from pathlib import Path
+
     download_all_photos(Path('test/'))
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(download_all_photos_asyncio(Path('test/')))
