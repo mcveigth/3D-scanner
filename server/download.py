@@ -63,6 +63,33 @@ def download_all_photos(dest):
         t = Thread(target=download, args=(ip, dest))
         t.start()
 
+# possible fix for faster threading
+
+def download_sublist(sublist, dest):
+    for ip in sublist:
+        download(ip, dest)
+def download_main(dest):
+    IPS = settings.RASPBERRY_IPS
+
+    # Define the number of threads to use
+    num_threads = 4
+
+    # Divide the list into sublists
+    sublist_size = len(IPS) // num_threads
+    sublists = [IPS[i:i+sublist_size] for i in range(0, len(IPS), sublist_size)]
+
+    #create a thread for each sublist and start them
+    threads = []
+    for i, sublist in enumerate(sublists):
+        thread_name = f"Thread-{i}"
+        thread = Thread(target=download, args=(sublist, dest), name=thread_name)
+        thread.start()
+        threads.append(thread)
+
+    # Wait for all threads to finish
+    for thread in threads:
+        thread.join()
+
 if __name__ == '__main__':
     from pathlib import Path
     path = Path('/home/figurines/3D-scanner/server/')
