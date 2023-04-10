@@ -1,4 +1,3 @@
-import os
 import json
 import time
 from datetime import datetime
@@ -6,7 +5,8 @@ from pathlib import Path
 from flask import Flask, request, abort, send_from_directory
 from flask_cors import CORS
 
-import power, capture, download, settings
+import power, capture, settings
+from server import download
 
 import logging
 log = logging.getLogger('werkzeug')
