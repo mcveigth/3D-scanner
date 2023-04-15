@@ -17,8 +17,8 @@ if not settings.DEBUG:
     log.setLevel(logging.ERROR)
 
 build_folder = Path('../client/build')
-#output_folder = Path('./output')
-output_folder = Path('/home/mike/3DshockOriginal/server/output') #path needs to be changed each time if folder is different
+output_folder = Path('output')
+
 app = Flask(__name__, static_folder=str(build_folder), static_url_path='')
 
 CORS(app)
@@ -82,7 +82,8 @@ def clients_post():
         content['date'] = datetime.now().strftime('%Y-%m-%d')
         content['time'] = datetime.now().strftime('%H:%M:%S')
 
-        path.mkdir() #fucking tanner where did you get your degree from. A cerealbox?
+        if not path.exists():
+            path.mkdir()
         print(path)
         info_file = path / 'info.json'
         info_file.touch()
