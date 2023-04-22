@@ -36,3 +36,7 @@ webencodings==0.5.1
 Werkzeug==1.0.1
 PyJWT
 pyotp
+flask-jwt-extended
+apscheduler
+sqlalchemy
+mysql-connector-python
