@@ -1,6 +1,7 @@
 import os
-DEBUG = os.environ.get('FLASK_ENV', None) == 'development'
+DEBUG = os.environ.get('FLASK_ENV', True) == 'development'
 
+WORKERS=120
 DATABASE = 'mysql+mysqlconnector://mcveigth:asdf@localhost:3306/company'
 LIGHT_IP = '192.168.99.25'
 LIGHT_USER = 'admin'
