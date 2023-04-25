@@ -178,12 +178,13 @@ def session_post(cid):
     power.lights_on()
     time.sleep(0.1)
     capture.trigger_capture()
-    #time.sleep(light_time / 1000)
+    time.sleep(light_time / 1000)
     #power.lights_off()
 
     status = WRITING
     time.sleep(max(5 - light_time / 1000, 1))
 
+    time.sleep(5)
     status = DOWNLOADING
     download.download_all_photos(path)
     time.sleep(3)
