@@ -5,11 +5,8 @@ from datetime import datetime
 from pathlib import Path
 from flask import Flask, request, abort, send_from_directory
 from flask_cors import CORS
-#testing
-from flask_jwt_extended import create_access_token,get_jwt,get_jwt_identity, unset_jwt_cookies, jwt_required, JWTManager
-from apscheduler.schedulers.background import BackgroundScheduler
-##
-import power, capture, download, settings, otpLogin
+from playsound import playsound
+import power, capture, download, settings
 
 import logging
 log = logging.getLogger('werkzeug')
@@ -17,16 +14,11 @@ if not settings.DEBUG:
     log.setLevel(logging.ERROR)
 
 build_folder = Path('../client/build')
-output_folder = Path('output')
-
+#output_folder = Path('./output')
+output_folder = Path('/home/figurineme/3D-scanner/server/output') #path needs to be changed each time if folder is different
 app = Flask(__name__, static_folder=str(build_folder), static_url_path='')
-
 CORS(app)
 
-#testing
-app.config["JWT_SECRET_KEY"] = "testing1"
-jwt = JWTManager(app)
-##
 STANDBY = 0
 WARMUP = 1
 CAPTURING_PHOTO = 2
@@ -36,65 +28,36 @@ DOWNLOADING = 5
 
 status = STANDBY
 
-#testing
-otpQueue = "otpQueue.json"
-
-def createOtps():
-    """Creates otps based on dates provided by otpQueue"""
-    dates = otpLogin.createDates("otpQueue.json")
-    otps = [otpLogin.getOTP(d) for d in dates]
-    print(otps)
-
-def checkQueue():
-    """Checks for changes in queue, if changes were made call createOtps"""
-    with open("otp.log") as f:
-        stamp = f.read()
-        actStamp = str(os.path.getctime("otpQueue.json"))
-        if stamp != actStamp:
-            print("file has changed")
-            with open("otp.log", "w") as f:
-                f.write(actStamp)
-            createOtps()
-
-scheduler = BackgroundScheduler() 
-scheduler.add_job(func=checkQueue,trigger='interval', seconds=5) #sets scheduler for checkQueue
-scheduler.start()
-##
 @app.route('/api/status', methods=['GET'])
 def status_get():
     return {'status': status}
 
 @app.route('/api/clients', methods=['POST'])
 def clients_post():
-    content = request.json    
+    content = request.json
+
+    #phone = str(content['phone'])
+    #address = str(content['address'])
     email = str(content['email'])
-    passcode = str(content['passcode'])
-    #testing
-    if otpLogin.verifyOTP(passcode, 3) or passcode == '123456':
-        #verifies otp for a window of 3(90secs)
-        for i in range(1, 100):
-            suffix = str(i).zfill(2)
-            folder = email + '_' + suffix
-            path = output_folder / folder
-            if not path.exists():
-                break
-
-        content['date'] = datetime.now().strftime('%Y-%m-%d')
-        content['time'] = datetime.now().strftime('%H:%M:%S')
-
+    for i in range(1, 100):
+        suffix = str(i).zfill(2)
+        folder = email + '_' + suffix
+        path = output_folder / folder
         if not path.exists():
-            path.mkdir()
-        print(path)
-        info_file = path / 'info.json'
-        info_file.touch()
-        info_file.write_text(json.dumps(content, indent=4))
+            break
 
-        client_id = folder
+    content['date'] = datetime.now().strftime('%Y-%m-%d')
+    content['time'] = datetime.now().strftime('%H:%M:%S')
 
-        print('POST client:', content, 'cid:', client_id)
-        return {'client_id': client_id}
-    else:
-        return {"msg": "Wrong passcode"}, 401
+    path.mkdir()
+    info_file = path / 'info.json'
+    info_file.touch()
+    info_file.write_text(json.dumps(content, indent=4))
+
+    client_id = folder
+
+    print('POST client:', content, 'cid:', client_id)
+    return {'client_id': client_id}
 
 @app.route('/api/clients/<cid>', methods=['GET'])
 def clients_get(cid):
@@ -163,6 +126,7 @@ def session_post(cid):
         # warmup
         status = WARMUP
         power.lights_on()
+
         #time.sleep(2)
         #power.lights_off()
         #time.sleep(1)
@@ -177,18 +141,20 @@ def session_post(cid):
     status = CAPTURING_PHOTO
     power.lights_on()
     time.sleep(0.1)
+    playsound('/home/figurineme/3D-scanner/server/instructions.mp3')
     capture.trigger_capture()
-    time.sleep(light_time / 1000)
+    playsound('/home/figurineme/3D-scanner/server/countdown.mp3')
+
+    #time.sleep(light_time / 1000)
     #power.lights_off()
 
     status = WRITING
     time.sleep(max(5 - light_time / 1000, 1))
 
-    time.sleep(5)
     status = DOWNLOADING
     download.download_all_photos(path)
-    time.sleep(3)
-
+    time.sleep(6)
+#    download.download_all_photos_asyncio(path) #test
     status = STANDBY
     print('Finished.')
     return ''
@@ -205,4 +171,4 @@ def not_found(e):
 def output(filename):
     return send_from_directory('output/', filename)
 
-app.run(host='0.0.0.0', port=5001, debug=True) #changed port to 80 for changes and testing
+app.run(host='0.0.0.0', port=5000) #changed port to 80 for changes and testing
