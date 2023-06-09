@@ -19,7 +19,7 @@ To set up the 3DShock project, follow these steps:
 1. Clone the repository:
 
    ```shell
-   git clone https://github.com/your-username/3DShock.git
+   git clone https://github.com/your-username/3DShock.git](https://github.com/mcveigth/3D-scanner.git
    cd 3DScanner
    ```
 
