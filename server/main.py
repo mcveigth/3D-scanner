@@ -15,7 +15,7 @@ if not settings.DEBUG:
 
 build_folder = Path('../client/build')
 
-output_folder = Path('~/3D-scanner/server/output').expanduser()
+output_folder = Path('~/PycharmProjects/3D-scanner/server/output').expanduser()
 output_folder.mkdir(exist_ok=True)
 
 app = Flask(__name__, static_folder=str(build_folder), static_url_path='')
