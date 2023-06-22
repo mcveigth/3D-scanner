@@ -14,8 +14,10 @@ if not settings.DEBUG:
     log.setLevel(logging.ERROR)
 
 build_folder = Path('../client/build')
-#output_folder = Path('./output')
-output_folder = Path('/home/figurineme/3D-scanner/server/output') #path needs to be changed each time if folder is different
+
+output_folder = Path('~/3D-scanner/server/output').expanduser()
+output_folder.mkdir(exist_ok=True)
+
 app = Flask(__name__, static_folder=str(build_folder), static_url_path='')
 CORS(app)
 
